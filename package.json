@@ -1,0 +1,26 @@
+{
+  "name": "fuzzer",
+  "version": "1.0.0",
+  "description": "Fuzzer for gear program",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "@gear-js/api": "^0.32.4",
+    "@gear-js/txwrapper": "^0.0.1",
+    "@polkadot/api": "10.9.1",
+    "@polkadot/util-crypto": "^12.3.2",
+    "@substrate/txwrapper-core": "^7.0.1",
+    "@substrate/txwrapper-polkadot": "^7.0.1",
+    "@substrate/txwrapper-registry": "^7.0.1",
+    "@substrate/txwrapper-substrate": "^7.0.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@tsconfig/node-lts": "^18.12.3",
+    "@tsconfig/recommended": "^1.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}
