@@ -17,6 +17,9 @@ const main = async () => {
             tokensOnWin: 0,
         }
     };
+    const PROGRAM_ACTION = {
+        StartGame: {},
+    };
 
     const NUMBER_OF_ACCOUNTS = 1000;
 
@@ -104,13 +107,40 @@ const main = async () => {
     const value = amount.mul(new BN(10).pow(decimals));
 
     for (let account of accounts) {
-        console.log(account.mnemonic);
-        console.log(account.keyring.address);
-
         const tx = api.balance.transfer(account.keyring.address, value);
 
         const nonce = await api.rpc.system.accountNextIndex(deriveAddress(aliceKeypair.publicKey, 42));
         await tx.signAndSend(aliceKeypair, {nonce});
+    }
+
+    // start game from created accounts
+
+    let counter = 1;
+    for (let account of accounts) {
+        const payload = PROGRAM_ACTION;
+
+        const gasInfo = await api.program.calculateGas.handle(
+            decodeAddress(aliceKeypair.address),
+            programId,
+            payload,
+            0,
+            true,
+            meta,
+            meta?.types.handle.input!,
+        );
+        const gasLimit = gasInfo.min_limit;
+
+        console.log(`sent ${counter} / ${NUMBER_OF_ACCOUNTS}, gas limit: ${gasLimit}`);
+        counter += 1;
+
+        const tx = api.message.send({
+            destination: programId,
+            payload,
+            gasLimit,
+        }, meta);
+
+        const nonce = await api.rpc.system.accountNextIndex(deriveAddress(account.keyring.publicKey, 42));
+        await tx.signAndSend(account.keyring, {nonce});
     }
 }
 
