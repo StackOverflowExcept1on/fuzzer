@@ -5,6 +5,7 @@ import {deriveAddress, KeyringPair} from "@substrate/txwrapper-core";
 import {decodeAddress, GearApi, getProgramMetadata, GearKeyring} from "@gear-js/api";
 import * as fs from "fs";
 import * as crypto from "crypto";
+import {SubmittableExtrinsic} from "@polkadot/api/types";
 
 const main = async () => {
     // config
@@ -22,6 +23,7 @@ const main = async () => {
     };
 
     const NUMBER_OF_ACCOUNTS = 1000;
+    const SIZE_OF_CHUNK_FOR_AIRDROP = 200;
 
     // init Alice account
     await cryptoWaitReady();
@@ -106,11 +108,28 @@ const main = async () => {
     const amount = new BN(1_000);
     const value = amount.mul(new BN(10).pow(decimals));
 
+    const txs: SubmittableExtrinsic<'promise'>[] = [];
+
     for (let account of accounts) {
         const tx = api.balance.transfer(account.keyring.address, value);
+        txs.push(tx);
+    }
 
-        const nonce = await api.rpc.system.accountNextIndex(deriveAddress(aliceKeypair.publicKey, 42));
-        await tx.signAndSend(aliceKeypair, {nonce});
+    let airdropCounter = 1;
+    for (let i = 0; i < txs.length; i += SIZE_OF_CHUNK_FOR_AIRDROP) {
+        const chunk = txs.slice(i, i + SIZE_OF_CHUNK_FOR_AIRDROP);
+        try {
+            await new Promise((resolve) => {
+                api.tx.utility.batchAll(chunk).signAndSend(aliceKeypair, (result) => {
+                    result.status.isFinalized && resolve('ok');
+                });
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
+        console.log(`sent airdrop: ${airdropCounter}`)
+        airdropCounter += 1;
     }
 
     // start game from created accounts
