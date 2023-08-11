@@ -159,7 +159,21 @@ const main = async () => {
         }, meta);
 
         const nonce = await api.rpc.system.accountNextIndex(deriveAddress(account.keyring.publicKey, 42));
-        await tx.signAndSend(account.keyring, {nonce});
+        try {
+            await new Promise((resolve, reject) => {
+                tx.signAndSend(account.keyring, {nonce}, ({events, status}) => {
+                    console.log(`STATUS: ${status.toString()}`);
+                    if (status.isFinalized) resolve(status.asFinalized);
+                    events.forEach(({event}) => {
+                        if (event.method === 'ExtrinsicFailed') {
+                            reject(api.getExtrinsicFailedError(event).docs.join('/n'));
+                        }
+                    });
+                });
+            });
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
 
