@@ -1,7 +1,7 @@
 {
-  "name": "fuzzer",
+  "name": "vit-stress-test",
   "version": "1.0.0",
-  "description": "Fuzzer for gear program",
+  "description": "Stress testing program for our private node",
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node src/main.ts"

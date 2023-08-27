@@ -1,4 +1,6 @@
-### fuzzer
+### vit-stress-test
+
+vit-stress-test
 
 Usage:
 
